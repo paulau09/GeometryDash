@@ -64,7 +64,7 @@ let agrandir arr agrandissement =
 	done;
 	nouvArr;;
 
-let niv1 = open_in "../../DM Jeu/niveau1.txt";;
+let niv1 = open_in "../../niveau1.txt";;
 
 let arr = file_to_byte_array niv1;;
 
@@ -74,11 +74,25 @@ let img = make_image arr2;;
 
 draw_image img 0 0;;
 
-for i=0 to 50 do
-	draw_image img (-i*20) 0;
-	Unix.sleepf 0.05
-	done;;
+(*Création joueur*)
+let coul = rgb 0 0 255;;
+set_color coul;;
+fill_rect 400 20 20 20;;
 
+(*hauteur du joueur pour le saut*)
+let h_joueur = ref 20.;;
+let h_bloc = ref 20.;;
+
+for i=0 to 500 do
+	if (key_pressed()) then 
+		if ((read_key()= ' ') && (!h_joueur = !h_bloc )) then 
+			(h_joueur := (!h_joueur)+. 50. );
+	if !h_joueur <> !h_bloc then h_joueur := !h_joueur -. 0.625; (*bien faire attention a décrementer de sorte que ca puisse être égal*)
+	draw_image img (-i) 0;
+	fill_rect 400 (int_of_float !h_joueur) 20 20;
+	Unix.sleepf 0.002;
+	done;;
+       
 close_in niv1;;
 
 clear_graph();;
