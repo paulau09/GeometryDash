@@ -1,15 +1,17 @@
 # GeometryDash
 
-' ' -> vide
+Signification des blocs :
 
-'B' -> bloc
+	' ' -> vide
 
-'h' -> pic vers le haut
+	'B' -> bloc
 
-'b' -> pic vers le bas
+	'h' -> pic vers le haut
 
-'d' -> pic vers la droite
+	'b' -> pic vers le bas
 
-'g' -> pic vers la gauche
+	'd' -> pic vers la droite
 
-'D' -> demi bloc
+	'g' -> pic vers la gauche
+
+	'D' -> demi bloc
