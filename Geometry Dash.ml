@@ -90,7 +90,7 @@ let saut t = match t with
 
 for i=0 to 600 do
 	if (key_pressed()) then 
-		if ((read_key()= ' ') && (joueur.position.y = 25)) then 
+		if ((read_key()= ' ') && (joueur.y = 25)) then 
 			joueur.vy <- temps_saut;
 	if joueur.vy > 0 then 
 		(joueur.y <- joueur.y+saut joueur.vy ; joueur.vy <- joueur.vy-1);
