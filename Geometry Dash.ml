@@ -13,7 +13,9 @@ let joueur = {position = {x = 400; y = 25}; vy = 0; couleur = blue; taille = 25}
 set_color joueur.couleur;;
 
 let hauteurNiveau = 25
-and longueurNiveau = 100;;
+and longueurNiveau = 100
+and temps_saut = 24
+and posx = 400;;
 
 
 let file_to_byte_array fichier =
@@ -70,7 +72,7 @@ let agrandir arr agrandissement =
 	done;
 	nouvArr;;
 
-let niv1 = open_in "../../DM Jeu/niveau1.txt";;
+let niv1 = open_in "../../niveau1.txt";;
 
 let arr = file_to_byte_array niv1;;
 
@@ -80,42 +82,25 @@ let img = make_image arr2;;
 
 draw_image img 0 0;;
 
-let h_joueur = ref 25.;;
 let h_bloc = ref 25.;;
 
-for i=0 to 5000 do
-	if (key_pressed()) then 
-		if ((read_key()= ' ') && (!h_joueur = !h_bloc )) then 
-			(h_joueur := (!h_joueur)+. 50. );
-	if !h_joueur <> !h_bloc then h_joueur := !h_joueur -. 0.625; (*bien faire attention a décrementer de sorte que ca puisse être égal*)
-	draw_image img (-i) 0;
-	fill_rect 400 (int_of_float !h_joueur) 25 25;
-	Unix.sleepf 0.002;
-	done;;
+let saut t = match t with
+	| 	n when 14< n && n <=24 -> 7
+	|	n when 0 < n && n<=14 -> -5
+	|	_ -> 0;;
 
-
-for i=0 to 5000 do
+for i=0 to 600 do
 	if (key_pressed()) then 
 		if ((read_key()= ' ') && (joueur.position.y = 25)) then 
-			joueur.vy <- 70;
-	if !h_joueur <> !h_bloc then h_joueur := !h_joueur -. 0.625; (*bien faire attention a décrementer de sorte que ca puisse être égal*)
-	draw_image img (-i) 0;
-	fill_rect 400 (int_of_float !h_joueur) 25 25;
-	Unix.sleepf 0.002;
+			joueur.vy <- temps_saut;
+	if joueur.vy > 0 then 
+		(joueur.position.y <- joueur.position.y+saut joueur.vy ; joueur.vy <- joueur.vy-1);
+	draw_image img (-6*i) 0;
+	fill_rect posx (joueur.position.y) joueur.taille joueur.taille;
+	Unix.sleepf 0.025;
 	done;;
+
 
 close_in niv1;;
 
 clear_graph();;
-
-
-
-
-
-
-
-
-
-
-
-
