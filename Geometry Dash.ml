@@ -7,7 +7,7 @@ open_graph "1000x500+150+150";;
 
 type carre = {mutable y : int; mutable vy :  int; couleur : color; taille : int};;
 
-let joueur = {position = {x = 400; y = 25}; vy = 0; couleur = blue; taille = 25};;
+let joueur = {y = 25; vy = 0; couleur = blue; taille = 25};;
 
 set_color joueur.couleur;;
 
