@@ -5,8 +5,7 @@ open Graphics;;
 
 open_graph "1000x500+150+150";;
 
-type point = {x: int; mutable y : int};;
-type carre = {position : point; mutable vy :  int; couleur : color; taille : int};;
+type carre = {mutable y : int; mutable vy :  int; couleur : color; taille : int};;
 
 let joueur = {position = {x = 400; y = 25}; vy = 0; couleur = blue; taille = 25};;
 
