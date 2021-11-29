@@ -93,9 +93,9 @@ for i=0 to 600 do
 		if ((read_key()= ' ') && (joueur.position.y = 25)) then 
 			joueur.vy <- temps_saut;
 	if joueur.vy > 0 then 
-		(joueur.position.y <- joueur.position.y+saut joueur.vy ; joueur.vy <- joueur.vy-1);
+		(joueur.y <- joueur.y+saut joueur.vy ; joueur.vy <- joueur.vy-1);
 	draw_image img (-6*i) 0;
-	fill_rect posx (joueur.position.y) joueur.taille joueur.taille;
+	fill_rect posx (joueur.y) joueur.taille joueur.taille;
 	Unix.sleepf 0.025;
 	done;;
 
