@@ -11,7 +11,7 @@ let joueur = {y = 25; vy = 0; couleur = blue; taille = 25};;
 
 set_color joueur.couleur;;
 
-let hauteurNiveau = 25
+let hauteurNiveau = 20
 and longueurNiveau = 100
 and temps_saut = 24
 and posx = 400;;
@@ -71,7 +71,7 @@ let agrandir arr agrandissement =
 	done;
 	nouvArr;;
 
-let niv1 = open_in "../../niveau1.txt";;
+let niv1 = open_in "../../DM Jeu/niveau1.txt";;
 
 let arr = file_to_byte_array niv1;;
 
@@ -84,9 +84,9 @@ draw_image img 0 0;;
 let h_bloc = ref 25.;;
 
 let saut t = match t with
-	| 	n when 14< n && n <=24 -> 7
-	|	n when 0 < n && n<=14 -> -5
-	|	_ -> 0;;
+| 	n when 14< n && n <=24 -> 7
+|	n when 0 < n && n<=14 -> -5
+|	_ -> 0;;
 
 for i=0 to 600 do
 	if (key_pressed()) then 
@@ -103,3 +103,18 @@ for i=0 to 600 do
 close_in niv1;;
 
 clear_graph();;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
