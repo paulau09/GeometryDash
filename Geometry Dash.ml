@@ -5,16 +5,18 @@ open Graphics;;
 
 open_graph "1000x500+150+150";;
 
-type carre = {mutable y : int; mutable vy :  int; couleur : color; taille : int};;
+type carre = {mutable x : int; mutable y : float; mutable vy :  float; couleur : color; taille : int};;
 
-let joueur = {y = 25; vy = 0; couleur = blue; taille = 25};;
+let joueur = {x = 400; y = 25.; vy = 0.; couleur = blue; taille = 25};;
 
 set_color joueur.couleur;;
 
 let hauteurNiveau = 20
 and longueurNiveau = 100
-and temps_saut = 24
-and posx = 400;;
+and temps_saut = 17.
+and posAffx = 400
+and gravite = 6.
+and vitesse = 5;;
 
 
 let file_to_byte_array fichier =
@@ -40,7 +42,7 @@ let agrandir arr agrandissement =
 		for j=0 to (taille2-1) do
 			
 			let valeur = arr.(i).(j) in
-			
+			print_int valeur;
 			if (valeur = int_of_char ' ') then
 				
 				begin
@@ -71,11 +73,12 @@ let agrandir arr agrandissement =
 	done;
 	nouvArr;;
 
-let niv1 = open_in "../../DM Jeu/niveau1.txt";;
+
+let niv1 = open_in "../../niveau1.txt";;
 
 let arr = file_to_byte_array niv1;;
 
-let arr2 = agrandir arr 25;;
+let arr2 = agrandir arr joueur.taille;;
 
 let img = make_image arr2;;
 
@@ -84,25 +87,45 @@ draw_image img 0 0;;
 let h_bloc = ref 25.;;
 
 let saut t = match t with
-| 	n when 14< n && n <=24 -> 7
-|	n when 0 < n && n<=14 -> -5
-|	_ -> 0;;
+| 	x when 0. < x  -> t
+|	_ -> 0.;;
 
-for i=0 to 600 do
+joueur.y <- 25.;;
+joueur.x <- 400;;
+joueur.vy <- 0.;;
+set_color joueur.couleur;;
+
+
+for i=0 to 400 do
 	if (key_pressed()) then 
-		if ((read_key()= ' ') && (joueur.y = 25)) then 
+		if ((read_key()= ' ') && (joueur.y = !h_bloc)) then 
 			joueur.vy <- temps_saut;
-	if joueur.vy > 0 then 
-		(joueur.y <- joueur.y+saut joueur.vy ; joueur.vy <- joueur.vy-1);
-	draw_image img (-6*i) 0;
-	fill_rect posx (joueur.y) joueur.taille joueur.taille;
-	Unix.sleepf 0.025;
+	if joueur.vy > 0. then 
+		(joueur.y <- joueur.y +. saut joueur.vy ; joueur.vy <- joueur.vy -. 1.);
+	if joueur.y -. !h_bloc > gravite then
+		joueur.y <- joueur.y -. gravite 
+		else (if joueur.y -. !h_bloc > 0. then
+			joueur.y <- !h_bloc);
+	for k=(-1) to 1 do
+		print_int ((joueur.x / joueur.taille) + k);
+		print_endline "";
+		print_int (((int_of_float joueur.y) / joueur.taille) - 1);
+		print_endline "";
+		if (arr.(((int_of_float joueur.y) / joueur.taille) - 1).((joueur.x / joueur.taille) + k)) = int_of_char 'B' then
+			h_bloc := float_of_int ((int_of_float joueur.y) / joueur.taille * joueur.taille)
+	done;
+	joueur.x <- joueur.x + vitesse;
+	draw_image img (-vitesse*i) 0;
+	fill_rect posAffx (int_of_float joueur.y) joueur.taille joueur.taille;
+	Unix.sleepf 0.016;
 	done;;
-
-
+(int_of_float joueur.y) / joueur.taille * joueur.taille;;
+joueur.y <- 24.;;
 close_in niv1;;
 
 clear_graph();;
+
+
 
 
 
