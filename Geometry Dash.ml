@@ -3,28 +3,43 @@
 
 open Graphics;;
 
-open_graph "1000x500+150+150";;
+open_graph " 1000x500+150+150";;
 
-type carre = {mutable x : int; mutable y : float; mutable vy :  float; couleur : color; taille : int};;
+type carre = {mutable x : int; mutable y : int; mutable vy : int; couleur : color; taille : int};;
 
-let joueur = {x = 16; y = 25.; vy = 0.; couleur = blue; taille = 25};;
+let joueur = {x = 400; y = 25; vy = 0; couleur = blue; taille = 25};;
 
 set_color joueur.couleur;;
 
 let hauteurNiveau = 20
 and longueurNiveau = 100
-and temps_saut = 17.
+and tempsSaut = 17
 and posAffx = 400
-and gravite = 5.
-and vitesse = -5;;
+and gravite = 6
+and vitesse = 3
+and bloc_ = int_of_char 'B'
+and air_ = int_of_char ' ';;
 
+
+(* Fonction test pour fichier
+
+
+let print_fichier fichier = 
+	for i=0 to (hauteurNiveau-1) do
+		for j=0 to (longueurNiveau+1) do
+			let c = input_byte fichier in
+			print_int c;
+			print_newline ();
+		done
+	done;;
+*)
 
 let file_to_byte_array fichier =
 	let grille = Array.make_matrix hauteurNiveau longueurNiveau 0 in
 	for i=0 to (hauteurNiveau-1) do
-		for j=0 to (longueurNiveau) do
+		for j=0 to (longueurNiveau+1) do
 			let c = input_byte fichier in
-			if (c <> int_of_char '\n') then
+			if ((c <> int_of_char '\n') && (c <> int_of_char '\r')) then
 				grille.(i).(j) <- c
 		done
 	done;
@@ -42,8 +57,7 @@ let agrandir arr agrandissement =
 		for j=0 to (taille2-1) do
 			
 			let valeur = arr.(i).(j) in
-			
-			if (valeur = int_of_char ' ') then
+			if (valeur = air_) then
 				
 				begin
 				for k=0 to (agrandissement-1) do
@@ -56,7 +70,7 @@ let agrandir arr agrandissement =
 				done;
 				end
 			
-			else if (valeur = int_of_char 'B') then
+			else if (valeur = bloc_) then
 				
 				begin
 				for k=0 to (agrandissement-1) do
@@ -73,54 +87,114 @@ let agrandir arr agrandissement =
 	done;
 	nouvArr;;
 
-let niv1 = open_in "../../niveau1.txt";;
+
+let renverse grille = Array.of_list (List.rev (Array.to_list grille));;
+
+
+let niv1 = open_in_bin "niveau1.txt";;
 
 let arr = file_to_byte_array niv1;;
 
 let arr2 = agrandir arr joueur.taille;;
 
+let arr = renverse arr;;
+
 let img = make_image arr2;;
 
 draw_image img 0 0;;
 
-let h_bloc = ref 25.;;
+let h_bloc = ref 25;;
 
 let saut t = match t with
-| 	x when 0. < x  -> t
-|	_ -> 0.;;
+| 	x when 0 < x  -> t
+|	_ -> 0;;
 
-joueur.y <- 25.;;
-joueur.vy <- 0.;;
+joueur.y <- 25;;
+joueur.x <- posAffx;;
+joueur.vy <- 0;;
 set_color joueur.couleur;;
 
+(*
 for i=0 to 400 do
-	if (key_pressed()) then 
+	if (key_pressed()) then 		(*Lecture esapce pressée*)
 		if ((read_key()= ' ') && (joueur.y = !h_bloc)) then 
-			joueur.vy <- temps_saut;
-	if joueur.vy > 0. then 
-		(joueur.y <- joueur.y +. saut joueur.vy ; joueur.vy <- joueur.vy-.1.);
-	if joueur.y -. !h_bloc > gravite then
-		joueur.y <- joueur.y -. gravite 
-		else (if joueur.y -. !h_bloc > 0. then
+			joueur.vy <- tempsSaut;
+
+	if joueur.vy > 0 then 		(*Partie saut*)
+		(joueur.y <- joueur.y + saut joueur.vy ; joueur.vy <- joueur.vy - 1);
+
+	if joueur.y - !h_bloc > gravite then		(*Partie gravite*)
+		joueur.y <- joueur.y - gravite 
+		else (if joueur.y - !h_bloc > 0 then
 			joueur.y <- !h_bloc);
-	(*for k=(-1) to 1 do
-		if (arr.(joueur.x / joueur.taille - 1 + k).((int_of_float joueur.y) / joueur.taille - 1)) = int_of_char 'B' then
-			h_bloc := float_of_int ((int_of_float joueur.y) / joueur.taille * joueur.taille)
+
+	for k=(-1) to 1 do
+		if (arr.((joueur.y / joueur.taille) - 1).((joueur.x / joueur.taille) + k)) = bloc_ then
+			h_bloc := joueur.y / joueur.taille * joueur.taille
 	done;
-	joueur.x <- joueur.x + vitesse;*)
-	draw_image img (vitesse*i) 0;
-	fill_rect posAffx (int_of_float joueur.y) joueur.taille joueur.taille;
+
+	joueur.x <- joueur.x + vitesse;
+	draw_image img (-vitesse*i) 0;
+	fill_rect posAffx joueur.y joueur.taille joueur.taille;
 	Unix.sleepf 0.016;
+	done;;
+*)
+
+while true do 
+	joueur.y <- 25;
+	joueur.x <- posAffx;
+	joueur.vy <- 0;
+	set_color joueur.couleur;
+
+	for i=0 to 400 do
+		
+
+		if (joueur.y mod 25 < gravite) then (
+			
+			let bloc3 = arr.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille) and
+			bloc5 = arr.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille + 1) in
+
+			if (bloc3 = bloc_ || bloc5 = bloc_) then (
+				
+				joueur.y <- joueur.y - (joueur.y mod 25); (*Partie posant problème*)
+				joueur.vy <- 0;
+				if (key_pressed()) then (
+					
+					if (read_key()= ' ') then (
+						
+						joueur.vy <- tempsSaut;		(*Touche espace -> saut *)
+						
+					)
+				)
+				
+			) else if (bloc3 = air_ && bloc5 = air_) then (
+				
+				joueur.y <- joueur.y - gravite;	(*Partie gravité *)
+				
+			)
+			
+		) else (
+			
+			joueur.y <- joueur.y - gravite; (*Partie gravité *)
+			
+		);
+		
+		if (joueur.vy > 0) then (		(*Partie saut *)
+			joueur.y <- joueur.y + saut joueur.vy;
+			joueur.vy <- joueur.vy - 1;
+		);
+		
+		joueur.x <- joueur.x + vitesse;
+		draw_image img (-vitesse*i) 0;
+		fill_rect posAffx joueur.y joueur.taille joueur.taille;
+		Unix.sleepf 0.016;
+		
+		done;
 	done;;
 
 close_in niv1;;
 
 clear_graph();;
-
-
-
-
-
 
 
 
