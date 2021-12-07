@@ -16,7 +16,9 @@ and longueurNiveau = 130
 and tempsSaut = 17
 and posAffx = 400
 and gravite = 6
-and vitesse = 3;;
+and vitesse = 5
+and bloc_ = int_of_char 'B'
+and air_ = int_of_char ' ';;
 
 
 let print_fichier fichier = 
@@ -52,9 +54,8 @@ let agrandir arr agrandissement =
 		for j=0 to (taille2-1) do
 			
 			let valeur = arr.(i).(j) in
-			if (valeur = int_of_char ' ') then
+			if (valeur = air_) then (
 				
-				begin
 				for k=0 to (agrandissement-1) do
 					
 					for l=0 to (agrandissement-1) do
@@ -63,11 +64,9 @@ let agrandir arr agrandissement =
 						
 					done
 				done;
-				end
 			
-			else if (valeur = int_of_char 'B') then
+			) else if (valeur = bloc_) then (
 				
-				begin
 				for k=0 to (agrandissement-1) do
 					
 					for l=0 to (agrandissement-1) do
@@ -76,8 +75,9 @@ let agrandir arr agrandissement =
 						
 					done
 				done;
-				end
-
+				
+			);
+			
 		done
 	done;
 	nouvArr;;
@@ -86,8 +86,8 @@ let agrandir arr agrandissement =
 let renverse grille = Array.of_list (List.rev (Array.to_list grille));;
 
 
-let niv1 = open_in_bin "../../DM Jeu/niveau1.txt";;
-print_fichier niv1;;
+let niv1 = open_in_bin "../../Informatique/DM/Geometry Dash/niveau1.txt";;
+
 let arr = file_to_byte_array niv1;;
 
 let arr2 = agrandir arr joueur.taille;;
@@ -105,7 +105,7 @@ let saut t = match t with
 |	_ -> 0;;
 
 joueur.y <- 25;;
-joueur.x <- 400;;
+joueur.x <- posAffx;;
 joueur.vy <- 0;;
 set_color joueur.couleur;;
 
@@ -132,27 +132,31 @@ for i=0 to 400 do
 
 
 joueur.y <- 25;
-joueur.x <- 400;
+joueur.x <- posAffx;
 joueur.vy <- 0;
 set_color joueur.couleur;
-for i=0 to 600 do
+for i=0 to 400 do
 	if (joueur.y mod 25 < gravite) then (
 		
-		let blocDessous = arr.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille) in
-		if (blocDessous = 66) then (
+		let bloc2 = arr.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille)
+		and bloc3 = arr.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille + 1) in
+		
+		if (bloc2 = bloc_ || bloc3 = bloc_) then (
 			
 			joueur.y <- joueur.y - (joueur.y mod 25);
 			joueur.vy <- 0;
-			if (key_pressed()) then (
+			while (key_pressed()) do (
 				
-				if (read_key()= ' ') then (
+				if (read_key() = ' ') then (
 					
 					joueur.vy <- tempsSaut;
+					print_endline "AAAAAh";
 					
 				)
 			)
+			done;
 			
-		) else if (blocDessous = 32) then (
+		) else if (bloc2 = air_ && bloc3 = air_) then (
 			
 			joueur.y <- joueur.y - gravite;
 			
@@ -173,7 +177,7 @@ for i=0 to 600 do
 	draw_image img (-vitesse*i) 0;
 	fill_rect posAffx joueur.y joueur.taille joueur.taille;
 	Unix.sleepf 0.016;
-	done;;
+done;;
 
 
 close_in niv1;;
