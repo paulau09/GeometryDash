@@ -83,52 +83,56 @@ let agrandir arr agrandissement =
 	nouvArr;;
 
 
-let renverse grille = Array.of_list (List.rev (Array.to_list grille));;
+let decoupage arr =
+	let arrDecoupee = Array.make longueurNiveau (Array.make_matrix (hauteurNiveau*joueur.taille) joueur.taille 0) in
+	
+	for i=0 to longueurNiveau-1 do
+		
+		for j=0 to joueur.taille-1 do
+			
+			for k=0 to (hauteurNiveau*joueur.taille)-1 do
+				
+				arrDecoupee.(i).(k).(j) <- arr.(k).(i*joueur.taille+j)
+				
+			done
+			
+		done
+		
+	done;
+	arrDecoupee;;
+
+
+let renverse arr = 
+    let long = Array.length arr and
+    tmp = ref arr.(0) in
+    for i = 0 to (long/2 -1) do 
+        tmp := arr.(i);
+        arr.(i) <- arr.(long-i-1);
+        arr.(long-i-1) <- !tmp;
+    done;;
 
 
 let niv1 = open_in_bin "../../Informatique/DM/Geometry Dash/niveau1.txt";;
 
 let arr = file_to_byte_array niv1;;
 
-let arr2 = agrandir arr joueur.taille;;
+ let arr2 = agrandir arr joueur.taille;;
 
-let arr = renverse arr;;
+let arr3 = decoupage arr2;;
+
+let arr4 = Array.map make_image arr3;;
+
+for i=0 to 1000/20 do
+	draw_image arr4.(i) (i*20) 0;
+done;;
+
+renverse arr;;
 
 let img = make_image arr2;;
-
-draw_image img 0 0;;
-
-let h_bloc = ref 25;;
 
 let saut t = match t with
 | 	x when 0 < x  -> t
 |	_ -> 0;;
-
-joueur.y <- 25;;
-joueur.x <- posAffx;;
-joueur.vy <- 0;;
-set_color joueur.couleur;;
-
-for i=0 to 400 do
-	if (key_pressed()) then 
-		if ((read_key()= ' ') && (joueur.y = !h_bloc)) then 
-			joueur.vy <- tempsSaut;
-	if joueur.vy > 0 then 
-		(joueur.y <- joueur.y + saut joueur.vy ; joueur.vy <- joueur.vy - 1);
-	if joueur.y - !h_bloc > gravite then
-		joueur.y <- joueur.y - gravite 
-		else (if joueur.y - !h_bloc > 0 then
-			joueur.y <- !h_bloc);
-	for k=(-1) to 1 do
-		if (arr.((joueur.y / joueur.taille) - 1).((joueur.x / joueur.taille) + k)) = int_of_char 'B' then
-			h_bloc := joueur.y / joueur.taille * joueur.taille
-	done;
-	joueur.x <- joueur.x + vitesse;
-	draw_image img (-vitesse*i) 0;
-	fill_rect posAffx joueur.y joueur.taille joueur.taille;
-	Unix.sleepf 0.016;
-	done;;
-
 
 
 joueur.y <- 25;
@@ -145,16 +149,19 @@ for i=0 to 400 do
 			
 			joueur.y <- joueur.y - (joueur.y mod 25);
 			joueur.vy <- 0;
-			while (key_pressed()) do (
+			
+			if (key_pressed()) then (
 				
 				if (read_key() = ' ') then (
 					
 					joueur.vy <- tempsSaut;
 					print_endline "AAAAAh";
 					
-				)
+				);
+				while key_pressed() do
+					let _ = read_key() in ()
+				done;
 			)
-			done;
 			
 		) else if (bloc2 = air_ && bloc3 = air_) then (
 			
@@ -184,10 +191,17 @@ close_in niv1;;
 
 clear_graph();;
 
-
-
-
-
+sound 261 150;
+sound 261 150;
+sound 261 150;
+sound 293 150;
+sound 329 300;
+sound 293 300;
+sound 261 150;
+sound 329 150;
+sound 293 150;
+sound 293 150;
+sound 261 600;;
 
 
 
