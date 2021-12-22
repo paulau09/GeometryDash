@@ -1,9 +1,15 @@
+(* ------------ Ouverture des fichiers externes ---------------- *)
+
 #load "graphics.cma";;
 #load "unix.cma";;
 
 open Graphics;;
 
+(* ----------- Ouverture de la fenêtre ---------------- *)
+
 open_graph "1000x500+150+150";;
+
+(* ----------- Création du type carré pour le joueur ----------- *)
 
 type carre = {mutable x : int; mutable y : int; mutable vy : int; couleur : color; taille : int};;
 
@@ -11,13 +17,20 @@ let joueur = {x = 400; y = 25; vy = 0; couleur = blue; taille = 25};;
 
 set_color joueur.couleur;;
 
+(* ---------- Définition des constantes --------------- *)
+
 let hauteurNiveau = 20
-and longueurNiveau = 130
+and longueurNiveau = 200
 and tempsSaut = 17
 and posAffx = 400
 and gravite = 6
-and vitesse = 3;;
+and vitesse = 6
+and bloc_ = int_of_char 'B'
+and air_ = int_of_char ' '
+and picHaut_ = int_of_char 'h'
+and conservationInput = 10;;
 
+(* ---------- Définition des fonctions --------------- *)
 
 let print_fichier fichier = 
 	for i=0 to (hauteurNiveau-1) do
@@ -30,19 +43,25 @@ let print_fichier fichier =
 
 
 let file_to_byte_array fichier =
+	
 	let grille = Array.make_matrix hauteurNiveau longueurNiveau 0 in
+	
 	for i=0 to (hauteurNiveau-1) do
+		
 		for j=0 to (longueurNiveau+1) do
+			
 			let c = input_byte fichier in
 			if ((c <> int_of_char '\n') && (c <> int_of_char '\r')) then
 				grille.(i).(j) <- c
+			
 		done
+		
 	done;
 	grille;;
 
 
 let agrandir arr agrandissement =
-
+	
 	let taille1 = Array.length arr in
 	let taille2 = Array.length arr.(0) in
 	let nouvArr = Array.make_matrix (taille1*agrandissement) (taille2*agrandissement) 0 in
@@ -52,9 +71,8 @@ let agrandir arr agrandissement =
 		for j=0 to (taille2-1) do
 			
 			let valeur = arr.(i).(j) in
-			if (valeur = int_of_char ' ') then
+			if (valeur = air_) then (
 				
-				begin
 				for k=0 to (agrandissement-1) do
 					
 					for l=0 to (agrandissement-1) do
@@ -63,11 +81,9 @@ let agrandir arr agrandissement =
 						
 					done
 				done;
-				end
 			
-			else if (valeur = int_of_char 'B') then
+			) else if (valeur = bloc_) then (
 				
-				begin
 				for k=0 to (agrandissement-1) do
 					
 					for l=0 to (agrandissement-1) do
@@ -76,85 +92,150 @@ let agrandir arr agrandissement =
 						
 					done
 				done;
-				end
-
+				
+			) else if (valeur = picHaut_) then (
+				
+				let centrey = agrandissement/2 + 1 in
+				Printf.printf "%d \n" centrey;
+				
+				for k=0 to (agrandissement-1) do
+					
+					for l=0 to (agrandissement-1) do
+						
+						if (abs(centrey-l) > k) then (
+							
+							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- 0xFFFFFF;
+							
+						) else (
+							
+							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- 0;
+							
+						)
+						
+					done
+				done;
+				
+			);
+			
 		done
+		
 	done;
 	nouvArr;;
 
 
-let renverse grille = Array.of_list (List.rev (Array.to_list grille));;
+let decoupage arr =
+	let arrDecoupee = Array.make longueurNiveau (Array.make_matrix (hauteurNiveau*joueur.taille) joueur.taille 0) in
+	
+	for i=0 to longueurNiveau-1 do
+		
+		for j=0 to joueur.taille-1 do
+			
+			for k=0 to (hauteurNiveau*joueur.taille)-1 do
+				
+				arrDecoupee.(i).(k).(j) <- arr.(k).(i*joueur.taille+j)
+				
+			done
+			
+		done
+		
+	done;
+	arrDecoupee;;
 
 
-let niv1 = open_in_bin "../../DM Jeu/niveau1.txt";;
-print_fichier niv1;;
-let arr = file_to_byte_array niv1;;
+let renverse arr = 
+    let long = Array.length arr and
+    tmp = ref arr.(0) in
+    for i = 0 to (long/2 -1) do 
+        tmp := arr.(i);
+        arr.(i) <- arr.(long-i-1);
+        arr.(long-i-1) <- !tmp;
+    done;;
 
-let arr2 = agrandir arr joueur.taille;;
-
-let arr = renverse arr;;
-
-let img = make_image arr2;;
-
-draw_image img 0 0;;
-
-let h_bloc = ref 25;;
 
 let saut t = match t with
 | 	x when 0 < x  -> t
 |	_ -> 0;;
 
-joueur.y <- 25;;
-joueur.x <- 400;;
-joueur.vy <- 0;;
-set_color joueur.couleur;;
+(* -------------- Ouverture du niveau ------------- *)
 
-for i=0 to 400 do
-	if (key_pressed()) then 
-		if ((read_key()= ' ') && (joueur.y = !h_bloc)) then 
-			joueur.vy <- tempsSaut;
-	if joueur.vy > 0 then 
-		(joueur.y <- joueur.y + saut joueur.vy ; joueur.vy <- joueur.vy - 1);
-	if joueur.y - !h_bloc > gravite then
-		joueur.y <- joueur.y - gravite 
-		else (if joueur.y - !h_bloc > 0 then
-			joueur.y <- !h_bloc);
-	for k=(-1) to 1 do
-		if (arr.((joueur.y / joueur.taille) - 1).((joueur.x / joueur.taille) + k)) = int_of_char 'B' then
-			h_bloc := joueur.y / joueur.taille * joueur.taille
-	done;
-	joueur.x <- joueur.x + vitesse;
-	draw_image img (-vitesse*i) 0;
-	fill_rect posAffx joueur.y joueur.taille joueur.taille;
-	Unix.sleepf 0.016;
-	done;;
+let niv1 = open_in_bin "../../Informatique/DM/Geometry Dash/niveau1.txt";;
 
+let grille = file_to_byte_array niv1;;
 
+let affichage = agrandir grille joueur.taille;;
+(*
+let arr3 = decoupage arr2;;
+
+let arr4 = Array.map make_image arr3;;
+
+for i=0 to 1000/20 do
+	draw_image arr4.(i) (i*20) 0;
+done;;*)
+
+renverse grille;;
+
+let img = make_image affichage;;
+
+(* ------------- Boucle de jeu ------------- *)
 
 joueur.y <- 25;
-joueur.x <- 400;
+joueur.x <- posAffx;
 joueur.vy <- 0;
+	
 set_color joueur.couleur;
-for i=0 to 600 do
-	if (joueur.y mod 25 < gravite) then (
+	
+let conserve = ref conservationInput in
+	
+let i = ref 0
+and stop = ref 651 in
+while (!i)<(!stop) do
+	
+	if (joueur.x mod joueur.taille > joueur.taille - vitesse) then (
 		
-		let blocDessous = arr.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille) in
-		if (blocDessous = 66) then (
+		let bloc6 = grille.(joueur.y / joueur.taille).(joueur.x / joueur.taille + 1)
+		and bloc9 = grille.(joueur.y / joueur.taille + 1).(joueur.x / joueur.taille + 1) in
+		
+		if ((bloc6 = bloc_)
+				|| (joueur.y mod joueur.taille > 0 && bloc9 = bloc_)
+				|| (bloc6 = picHaut_)
+				|| (joueur.y mod joueur.taille > 0 && bloc9 = picHaut_)) then (
 			
-			joueur.y <- joueur.y - (joueur.y mod 25);
+			i := !stop;
+			
+		);
+		
+	);
+	
+	
+	if (joueur.y mod joueur.taille < gravite) then (
+		
+		let bloc2 = grille.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille)
+		and bloc3 = grille.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille + 1) in
+		
+		if (bloc2 = bloc_ || bloc3 = bloc_) then (
+			
+			joueur.y <- joueur.y - (joueur.y mod joueur.taille);
 			joueur.vy <- 0;
+			
 			if (key_pressed()) then (
 				
-				if (read_key()= ' ') then (
+				if (read_key() = ' ') then (
 					
 					joueur.vy <- tempsSaut;
 					
-				)
+				);
+				while key_pressed() do
+					let _ = read_key() in ()
+				done;
 			)
 			
-		) else if (blocDessous = 32) then (
+		) else if (bloc2 = air_ && bloc3 = air_) then (
 			
 			joueur.y <- joueur.y - gravite;
+			
+		) else if (bloc2 = picHaut_ || bloc3 = picHaut_) then (
+			
+			i := !stop;
 			
 		)
 		
@@ -170,20 +251,45 @@ for i=0 to 600 do
 	);
 	
 	joueur.x <- joueur.x + vitesse;
-	draw_image img (-vitesse*i) 0;
+	
+	draw_image img (-vitesse*(!i)) 0;
 	fill_rect posAffx joueur.y joueur.taille joueur.taille;
+	
+	if (key_pressed()) then (
+		
+		if ((!conserve) > 0) then (
+			
+			conserve := !conserve - 1;
+			
+		) else (
+			
+			conserve := conservationInput;
+			let _ = read_key() in ();
+			
+		)
+		
+	);
+	
 	Unix.sleepf 0.016;
-	done;;
+	i := (!i) + 1;
+done;;
 
 
 close_in niv1;;
 
 clear_graph();;
 
-
-
-
-
+sound 261 150;
+sound 261 150;
+sound 261 150;
+sound 293 150;
+sound 329 300;
+sound 293 300;
+sound 261 150;
+sound 329 150;
+sound 293 150;
+sound 293 150;
+sound 261 600;;
 
 
 
