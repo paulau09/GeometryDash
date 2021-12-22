@@ -7,13 +7,14 @@ open Graphics;;
 
 (* ----------- Ouverture de la fenêtre ---------------- *)
 
-open_graph "1000x500+150+150";;
+open_graph " 1000x500+150+150";;
 
 (* ----------- Création du type carré pour le joueur ----------- *)
 
-type carre = {mutable x : int; mutable y : int; mutable vy : int; couleur : color; taille : int};;
+type carre = {mutable x : int; mutable y : int; mutable vy : int; couleur : color; taille : int; xc : float; mutable yc : float};;
+type point = {mutable x : float; mutable y : float};;
 
-let joueur = {x = 400; y = 25; vy = 0; couleur = blue; taille = 25};;
+let joueur = {x = 400; y = 25; vy = 0; couleur = blue; taille = 25; xc = 412.5; yc = 37.5};;
 
 set_color joueur.couleur;;
 
@@ -28,7 +29,9 @@ and vitesse = 6
 and bloc_ = int_of_char 'B'
 and air_ = int_of_char ' '
 and picHaut_ = int_of_char 'h'
-and conservationInput = 10;;
+and conservationInput = 10
+and rayon = sqrt (2. *. (float_of_int joueur.taille /. 2.)**2.)
+and pi = 4. *. atan 1.;;
 
 (* ---------- Définition des fonctions --------------- *)
 
@@ -156,9 +159,13 @@ let saut t = match t with
 | 	x when 0 < x  -> t
 |	_ -> 0;;
 
+let foi pt = 	(* convertit point -> int*int *)
+	let a,b = int_of_float pt.x, int_of_float pt.y in
+	a,b;;
+
 (* -------------- Ouverture du niveau ------------- *)
 
-let niv1 = open_in_bin "../../Informatique/DM/Geometry Dash/niveau1.txt";;
+let niv1 = open_in_bin "niveau1.txt";;
 
 let grille = file_to_byte_array niv1;;
 
@@ -178,10 +185,15 @@ let img = make_image affichage;;
 
 (* ------------- Boucle de jeu ------------- *)
 
-joueur.y <- 25;
-joueur.x <- posAffx;
-joueur.vy <- 0;
-	
+joueur.y <- 25;;
+joueur.x <- posAffx;;
+joueur.vy <- 0;;
+let angle = ref (5. *. pi /. 4.);;
+let point1 = {x = joueur.xc +. rayon *. cos !angle; y = joueur.yc +. rayon *. sin !angle};;
+let point2 = {x = joueur.xc -. rayon *. cos !angle; y = joueur.yc +. rayon *. sin !angle};;
+let point3 = {x = joueur.xc -. rayon *. cos !angle; y = joueur.yc -. rayon *. sin !angle};;
+let point4 = {x = joueur.xc +. rayon *. cos !angle; y = joueur.yc -. rayon *. sin !angle};;
+
 set_color joueur.couleur;
 	
 let conserve = ref conservationInput in
@@ -248,13 +260,32 @@ while (!i)<(!stop) do
 	if (joueur.vy > 0) then (
 		joueur.y <- joueur.y + saut joueur.vy;
 		joueur.vy <- joueur.vy - 1;
+		angle := !angle -. pi /. (2. *. (float_of_int tempsSaut)) ;
 	);
 	
 	joueur.x <- joueur.x + vitesse;
 	
 	draw_image img (-vitesse*(!i)) 0;
-	fill_rect posAffx joueur.y joueur.taille joueur.taille;
-	
+
+(*-------------------Partie rotation--------------------- *)
+	joueur.yc <- float_of_int joueur.y +. 12.5;	
+	(*fill_rect posAffx joueur.y joueur.taille joueur.taille;*)
+
+
+	point1.x <- joueur.xc +. rayon *. cos !angle;
+	point1.y <- joueur.yc +. rayon *. sin !angle;
+	point2.x <- joueur.xc +. rayon *. cos (!angle +. pi /. 2.);
+	point2.y <- joueur.yc +. rayon *. sin (!angle +. pi /. 2.);
+	point3.x <- joueur.xc +. rayon *. cos (!angle +. pi);
+	point3.y <- joueur.yc +. rayon *. sin (!angle +. pi);
+	point4.x <- joueur.xc +. rayon *. cos (!angle -. pi /. 2.);
+	point4.y <- joueur.yc +. rayon *. sin (!angle -. pi /. 2.);
+
+	let poly = [|foi point1; foi point2; foi point3; foi point4|] in
+
+		fill_poly poly;
+
+
 	if (key_pressed()) then (
 		
 		if ((!conserve) > 0) then (
@@ -290,7 +321,6 @@ sound 329 150;
 sound 293 150;
 sound 293 150;
 sound 261 600;;
-
 
 
 
