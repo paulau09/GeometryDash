@@ -20,7 +20,7 @@ set_color joueur.couleur;;
 (* ---------- Définition des constantes --------------- *)
 
 let hauteurNiveau = 20
-and longueurNiveau = 200
+and longueurNiveau = 190
 and tempsSaut = 17
 and posAffx = 400
 and gravite = 6
