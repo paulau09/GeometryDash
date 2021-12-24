@@ -1,9 +1,13 @@
 TODO list :
-  - Sauts
-    -Système de vecteurs
-  - Collisions
-    -Gravité
-    -Morts
+  - Sauts                       ✔
+    (-Système de vecteurs)        
+    
+  - Collisions                  ✔
+    -Gravité                    ✔
+    -Morts                      
+    
   - Rotations
+  
   - Avancer sur le niveau
+  
   - Améliorer le temps
