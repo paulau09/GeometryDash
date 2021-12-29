@@ -35,6 +35,7 @@ and pi = 4. *. atan 1.
 and bloc_ = int_of_char 'B'
 and air_ = int_of_char ' '
 and picHaut_ = int_of_char 'h'
+and picBas_ = int_of_char 'b'
 and demiBloc_ = int_of_char 'D';;
 
 exception Mort;;
@@ -122,7 +123,26 @@ let agrandir arr agrandissement =
 						
 					done
 				done;
+			) else if (valeur = picBas_) then (
 				
+				let centrey = agrandissement/2 + 1 in
+				
+				for k=0 to (agrandissement-1) do
+					
+					for l=0 to (agrandissement-1) do
+						
+						if (abs(centrey-l) > k) then (
+							
+							nouvArr.((i+1)*agrandissement-k).(j*agrandissement+l) <- 0xEEEEEE; (**blanc *)
+							
+						) else (
+							
+							nouvArr.((i+1)*agrandissement-k).(j*agrandissement+l) <- 0x333333; (*gris*)
+							
+						)
+						
+					done
+				done;	
 			) else if (valeur = demiBloc_) then (
 				
 				for k=0 to (agrandissement-1) do
@@ -192,7 +212,7 @@ let foi pt = 	(* convertit point -> int*int *)
 
 (* -------------- Ouverture du niveau ------------- *)
 
-let niv1 = open_in_bin "../../Informatique/DM/Geometry Dash/niveau1.txt";;
+let niv1 = open_in_bin "niveau1.txt";;
 
 let grille = file_to_byte_array niv1;;
 
@@ -225,7 +245,7 @@ set_color joueur.couleur;
 let conserve = ref conservationInput in
 	
 let i = ref 0
-and stop = ref 1801 in
+and stop = ref 3000 in
 while (!i)<(!stop) do
 	
 	try
@@ -233,6 +253,7 @@ while (!i)<(!stop) do
 		if (joueur.x mod joueur.taille > joueur.taille - vitesse) then (
 			
 			let bloc6 = grille.(joueur.y / joueur.taille).(joueur.x / joueur.taille + 1)
+			and bloc8 = grille.(joueur.y / joueur.taille + 1).(joueur.x / joueur.taille)
 			and bloc9 = grille.(joueur.y / joueur.taille + 1).(joueur.x / joueur.taille + 1) in
 			
 			if ((bloc6 = bloc_)
@@ -240,7 +261,12 @@ while (!i)<(!stop) do
 					|| (bloc6 = picHaut_)
 					|| (joueur.y mod joueur.taille > 0 && bloc9 = picHaut_)
 					|| (bloc6 = demiBloc_)
-					|| ((joueur.y mod joueur.taille > 0 && bloc9 = demiBloc_))) then (
+					|| ((joueur.y mod joueur.taille > 0 && bloc9 = demiBloc_))
+					|| (bloc6 = picBas_)
+					|| (joueur.y mod joueur.taille > 0 && bloc8 = picBas_)
+					|| (joueur.y mod joueur.taille > 0 && bloc9 = picBas_)
+
+					) then (
 				
 				raise Mort;
 				
@@ -278,7 +304,7 @@ while (!i)<(!stop) do
 				
 				joueur.y <- joueur.y - gravite;
 				
-			) else if (bloc2 = picHaut_ || bloc3 = picHaut_) then (
+			) else if (bloc2 = picHaut_ || bloc3 = picHaut_ ) then (
 				
 				raise Mort;
 				
