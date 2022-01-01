@@ -1,6 +1,8 @@
 (* ------------ Ouverture des fichiers externes ---------------- *)
 
-#load "graphics.cma";;
+#use "topfind";;
+
+#require "graphics";;
 #load "unix.cma";;
 
 open Graphics;;
@@ -19,7 +21,7 @@ let joueur = {x = 400; y = 25; vy = 0; couleur = 0x3333FF; taille = 25; xc = 412
 (* ---------- Définition des constantes --------------- *)
 
 let hauteurNiveau = 20
-and longueurNiveau = 535
+and longueurNiveau = 588
 	
 and tempsSaut = 17
 and posAffx = 400
@@ -131,13 +133,13 @@ let agrandir arr agrandissement =
 					
 					for l=0 to (agrandissement-1) do
 						
-						if (abs(centrey-l) > k) then (
+						if (abs(centrey-l) >= (agrandissement - k)) then (
 							
-							nouvArr.((i+1)*agrandissement-k).(j*agrandissement+l) <- 0xEEEEEE; (**blanc *)
+							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- 0xEEEEEE; (* blanc *)
 							
 						) else (
 							
-							nouvArr.((i+1)*agrandissement-k).(j*agrandissement+l) <- 0x333333; (*gris*)
+							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- 0x333333; (* gris *)
 							
 						)
 						
@@ -230,156 +232,150 @@ let img = make_image affichage;;
 
 (* ------------- Boucle de jeu ------------- *)
 
-joueur.y <- 25;
-joueur.x <- posAffx;
-joueur.vy <- 0;
-	
-let angle = ref (5. *. pi /. 4.) in
-let point1 = {x = joueur.xc +. rayon *. cos !angle; y = joueur.yc +. rayon *. sin !angle}
-and point2 = {x = joueur.xc -. rayon *. cos !angle; y = joueur.yc +. rayon *. sin !angle}
-and point3 = {x = joueur.xc -. rayon *. cos !angle; y = joueur.yc -. rayon *. sin !angle}
-and point4 = {x = joueur.xc +. rayon *. cos !angle; y = joueur.yc -. rayon *. sin !angle} in
-	
-set_color joueur.couleur;
-	
-let conserve = ref conservationInput in
-	
-let i = ref 0
-and stop = ref 3000 in
-while (!i)<(!stop) do
-	
-	try
-	
-		if (joueur.x mod joueur.taille > joueur.taille - vitesse) then (
-			
-			let bloc6 = grille.(joueur.y / joueur.taille).(joueur.x / joueur.taille + 1)
-			and bloc8 = grille.(joueur.y / joueur.taille + 1).(joueur.x / joueur.taille)
-			and bloc9 = grille.(joueur.y / joueur.taille + 1).(joueur.x / joueur.taille + 1) in
-			
-			if ((bloc6 = bloc_)
-					|| (joueur.y mod joueur.taille > 0 && bloc9 = bloc_)
-					|| (bloc6 = picHaut_)
-					|| (joueur.y mod joueur.taille > 0 && bloc9 = picHaut_)
-					|| (bloc6 = demiBloc_)
-					|| ((joueur.y mod joueur.taille > 0 && bloc9 = demiBloc_))
-					|| (bloc6 = picBas_)
-					|| (joueur.y mod joueur.taille > 0 && bloc8 = picBas_)
-					|| (joueur.y mod joueur.taille > 0 && bloc9 = picBas_)
+let rec loop () =
 
-					) then (
+	joueur.y <- 25;
+	joueur.x <- posAffx;
+	joueur.vy <- 0;
+		
+	let angle = ref (5. *. pi /. 4.) in
+	let point1 = {x = joueur.xc +. rayon *. cos !angle; y = joueur.yc +. rayon *. sin !angle}
+	and point2 = {x = joueur.xc -. rayon *. cos !angle; y = joueur.yc +. rayon *. sin !angle}
+	and point3 = {x = joueur.xc -. rayon *. cos !angle; y = joueur.yc -. rayon *. sin !angle}
+	and point4 = {x = joueur.xc +. rayon *. cos !angle; y = joueur.yc -. rayon *. sin !angle} in
+		
+	set_color joueur.couleur;
+		
+	let conserve = ref conservationInput in
+		
+	let i = ref 0
+	and stop = 2417 in
+	while (!i)<stop do
+		
+		try
+		
+			if (joueur.x mod joueur.taille > joueur.taille - vitesse) then (
 				
-				raise Mort;
+				let bloc6 = grille.(joueur.y / joueur.taille).(joueur.x / joueur.taille + 1)
+				and bloc8 = grille.(joueur.y / joueur.taille + 1).(joueur.x / joueur.taille)
+				and bloc9 = grille.(joueur.y / joueur.taille + 1).(joueur.x / joueur.taille + 1) in
+				
+				if ((bloc6 = bloc_)
+						|| (joueur.y mod joueur.taille > 0 && bloc9 = bloc_)
+						|| (bloc6 = picHaut_)
+						|| (joueur.y mod joueur.taille > 0 && bloc9 = picHaut_)
+						|| (bloc6 = demiBloc_)
+						|| (joueur.y mod joueur.taille > 0 && bloc9 = demiBloc_)
+						|| (bloc6 = picBas_)
+						|| (joueur.y mod joueur.taille > 0 && bloc8 = picBas_)
+						|| (joueur.y mod joueur.taille > 0 && bloc9 = picBas_)
+						) then (
+					
+					raise Mort;
+					
+				);
 				
 			);
 			
-		);
-		
-		if (joueur.y mod joueur.taille < gravite) then (
-			
-			let bloc2 = grille.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille)
-			and bloc3 = grille.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille + 1) in
-			
-			if ((bloc2 = bloc_)
-					|| (bloc3 = bloc_)
-					|| (bloc2 = demiBloc_)
-					|| (bloc3 = demiBloc_)) then (
+			if (joueur.y mod joueur.taille < gravite) then (
 				
-				joueur.y <- joueur.y - (joueur.y mod joueur.taille);
-				joueur.vy <- 0;
-				angle := (5. *. pi /. 4.);
+				let bloc2 = grille.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille)
+				and bloc3 = grille.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille + 1) in
 				
-				if (key_pressed()) then (
+				if ((bloc2 = bloc_)
+						|| (bloc3 = bloc_)
+						|| (bloc2 = demiBloc_)
+						|| (bloc3 = demiBloc_)) then (
 					
-					if (read_key() = ' ') then (
+					joueur.y <- joueur.y - (joueur.y mod joueur.taille);
+					joueur.vy <- 0;
+					angle := (5. *. pi /. 4.);
+					
+					if (key_pressed()) then (
 						
-						joueur.vy <- tempsSaut;
-						
-					);
-					while key_pressed() do
-						let _ = read_key() in ()
-					done;
+						if (read_key() = ' ') then (
+							
+							joueur.vy <- tempsSaut;
+							
+						);
+						while key_pressed() do
+							let _ = read_key() in ()
+						done;
+					)
+					
+				) else if (bloc2 = air_ && bloc3 = air_) then (
+					
+					joueur.y <- joueur.y - gravite;
+					
+				) else if (bloc2 = picHaut_ || bloc3 = picHaut_ ) then (
+					
+					raise Mort;
+					
 				)
 				
-			) else if (bloc2 = air_ && bloc3 = air_) then (
+			) else (
 				
 				joueur.y <- joueur.y - gravite;
 				
-			) else if (bloc2 = picHaut_ || bloc3 = picHaut_ ) then (
-				
-				raise Mort;
-				
-			)
-			
-		) else (
-			
-			joueur.y <- joueur.y - gravite;
-			
-		);
-		
-		if (joueur.vy > 0) then (
-			joueur.y <- joueur.y + saut joueur.vy;
-			joueur.vy <- joueur.vy - 1;
-			if (joueur.vy = 0) then (
-				angle := (5. *. pi /. 4.);
-			) else (
-				angle := !angle -. pi /. (2. *. (float_of_int tempsSaut));
 			);
+			
+			if (joueur.vy > 0) then (
+				joueur.y <- joueur.y + saut joueur.vy;
+				joueur.vy <- joueur.vy - 1;
+				if (joueur.vy = 0) then (
+					angle := (5. *. pi /. 4.);
+				) else (
+					angle := !angle -. pi /. (2. *. (float_of_int tempsSaut));
+				);
+			);
+			
+			joueur.x <- joueur.x + vitesse;
+			
+			draw_image img (-vitesse*(!i)) 0;
+			
+			(*-------------------Partie rotation--------------------- *)
+			joueur.yc <- float_of_int joueur.y +. 12.5;
+			(*fill_rect posAffx joueur.y joueur.taille joueur.taille;*)
+			
+			point1.x <- joueur.xc +. rayon *. cos !angle;
+			point1.y <- joueur.yc +. rayon *. sin !angle;
+			point2.x <- joueur.xc +. rayon *. cos (!angle +. pi /. 2.);
+			point2.y <- joueur.yc +. rayon *. sin (!angle +. pi /. 2.);
+			point3.x <- joueur.xc +. rayon *. cos (!angle +. pi);
+			point3.y <- joueur.yc +. rayon *. sin (!angle +. pi);
+			point4.x <- joueur.xc +. rayon *. cos (!angle -. pi /. 2.);
+			point4.y <- joueur.yc +. rayon *. sin (!angle -. pi /. 2.);
+			
+			let poly = [|foi point1; foi point2; foi point3; foi point4|] in
+				fill_poly poly;
+			
+			if (key_pressed()) then (
+				
+				if ((!conserve) > 0) then (
+					
+					conserve := !conserve - 1;
+					
+				) else (
+					
+					conserve := conservationInput;
+					let _ = read_key() in ();
+					
+				)
+				
+			);
+			
+			Unix.sleepf 0.016;
+			i := (!i) + 1;
+		
+		with
+		| Mort -> (
+				let _ = wait_next_event[Key_pressed] in ();
+				loop();
 		);
 		
-		joueur.x <- joueur.x + vitesse;
-		
-		draw_image img (-vitesse*(!i)) 0;
-		
-		(*-------------------Partie rotation--------------------- *)
-		joueur.yc <- float_of_int joueur.y +. 12.5;
-		(*fill_rect posAffx joueur.y joueur.taille joueur.taille;*)
-		
-		point1.x <- joueur.xc +. rayon *. cos !angle;
-		point1.y <- joueur.yc +. rayon *. sin !angle;
-		point2.x <- joueur.xc +. rayon *. cos (!angle +. pi /. 2.);
-		point2.y <- joueur.yc +. rayon *. sin (!angle +. pi /. 2.);
-		point3.x <- joueur.xc +. rayon *. cos (!angle +. pi);
-		point3.y <- joueur.yc +. rayon *. sin (!angle +. pi);
-		point4.x <- joueur.xc +. rayon *. cos (!angle -. pi /. 2.);
-		point4.y <- joueur.yc +. rayon *. sin (!angle -. pi /. 2.);
-		
-		let poly = [|foi point1; foi point2; foi point3; foi point4|] in
-			fill_poly poly;
-		
-		if (key_pressed()) then (
-			
-			if ((!conserve) > 0) then (
-				
-				conserve := !conserve - 1;
-				
-			) else (
-				
-				conserve := conservationInput;
-				let _ = read_key() in ();
-				
-			)
-			
-		);
-		
-		Unix.sleepf 0.016;
-		i := (!i) + 1;
-	
-	with
-	| Mort -> i := !stop;
-	
-done;;
+	done;;
 
+
+loop();;
 
 close_in niv1;;
-
-sound 261 150;
-sound 261 150;
-sound 261 150;
-sound 293 150;
-sound 329 300;
-sound 293 300;
-sound 261 150;
-sound 329 150;
-sound 293 150;
-sound 293 150;
-sound 261 600;;
