@@ -249,7 +249,7 @@ let rec loop () =
 	let conserve = ref conservationInput in
 		
 	let i = ref 0
-	and stop = 2417 in
+	and stop = longueurNiveau*joueur.taille/vitesse + 1 in
 	while (!i)<stop do
 		
 		try
@@ -369,8 +369,12 @@ let rec loop () =
 		
 		with
 		| Mort -> (
-				let _ = wait_next_event[Key_pressed] in ();
-				loop();
+				let choix = wait_next_event[Key_pressed] in
+				if (choix.key <> 'q') then (
+					loop();
+				) else (
+					i := stop;
+				);
 		);
 		
 	done;;
