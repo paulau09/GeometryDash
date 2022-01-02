@@ -21,7 +21,7 @@ let joueur = {x = 400; y = 25; vy = 0; couleur = 0x3333FF; taille = 25; xc = 412
 (* ---------- Définition des constantes --------------- *)
 
 let hauteurNiveau = 20
-and longueurNiveau = 588
+and longueurNiveau = 591
 	
 and tempsSaut = 17
 and posAffx = 400
