@@ -33,6 +33,9 @@ and conservationInput = 20
 	
 and rayon = sqrt(2.) *. (float_of_int joueur.taille /. 2.)
 and pi = 4. *. atan 1.
+
+and couleurFond = 0xEEEEEE
+and couleurBloc = 0x333333
 	
 and bloc_ = int_of_char 'B'
 and air_ = int_of_char ' '
@@ -71,7 +74,7 @@ let file_to_byte_array fichier =
 	done;
 	grille;;
 
-
+(* Permet de passer d'une grille lue dans le fichier à un array qui peut être utilisé ppour le make_image *)
 let agrandir arr agrandissement =
 	
 	let taille1 = Array.length arr in
@@ -89,7 +92,7 @@ let agrandir arr agrandissement =
 					
 					for l=0 to (agrandissement-1) do
 						
-						nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- 0xEEEEEE
+						nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- couleurFond
 						
 					done
 				done;
@@ -100,7 +103,7 @@ let agrandir arr agrandissement =
 					
 					for l=0 to (agrandissement-1) do
 						
-						nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- 0x333333
+						nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- couleurBloc
 						
 					done
 				done;
@@ -115,11 +118,11 @@ let agrandir arr agrandissement =
 						
 						if (abs(centrey-l) > k) then (
 							
-							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- 0xEEEEEE;
+							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- couleurFond;
 							
 						) else (
 							
-							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- 0x333333;
+							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- couleurBloc;
 							
 						)
 						
@@ -135,11 +138,11 @@ let agrandir arr agrandissement =
 						
 						if (abs(centrey-l) >= (agrandissement - k)) then (
 							
-							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- 0xEEEEEE; (* blanc *)
+							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- couleurFond;
 							
 						) else (
 							
-							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- 0x333333; (* gris *)
+							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- couleurBloc;
 							
 						)
 						
@@ -153,11 +156,11 @@ let agrandir arr agrandissement =
 						
 						if (k < agrandissement/2) then (
 							
-							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- 0x333333;
+							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- couleurBloc;
 							
 						) else (
 							
-							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- 0xEEEEEE;
+							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- couleurFond;
 							
 						)
 						
@@ -171,38 +174,14 @@ let agrandir arr agrandissement =
 	nouvArr;;
 
 
-let decoupage arr =
-	let arrDecoupee = Array.make longueurNiveau (Array.make_matrix (hauteurNiveau*joueur.taille) joueur.taille 0) in
-	
-	for i=0 to longueurNiveau-1 do
-		
-		for j=0 to joueur.taille-1 do
-			
-			for k=0 to (hauteurNiveau*joueur.taille)-1 do
-				
-				arrDecoupee.(i).(k).(j) <- arr.(k).(i*joueur.taille+j)
-				
-			done
-			
-		done
-		
-	done;
-	arrDecoupee;;
-
-
 let renverse arr = 
-    let long = Array.length arr and
-    tmp = ref arr.(0) in
-    for i = 0 to (long/2 -1) do 
-        tmp := arr.(i);
-        arr.(i) <- arr.(long-i-1);
-        arr.(long-i-1) <- !tmp;
-    done;;
-
-
-let saut t = match t with
-| 	x when 0 < x  -> t
-|	_ -> 0;;
+	let long = Array.length arr and
+	tmp = ref arr.(0) in
+	for i = 0 to (long/2 -1) do 
+			tmp := arr.(i);
+			arr.(i) <- arr.(long-i-1);
+			arr.(long-i-1) <- !tmp;
+	done;;
 
 
 let arrondi f = int_of_float (f +. 0.5);;
@@ -212,19 +191,49 @@ let foi pt = 	(* convertit point -> int*int *)
 	let a,b = arrondi pt.x, arrondi pt.y in
 	a,b;;
 
+
+let checkBloc6 (j : carre) g =
+
+	let bloc6 = g.(j.y / j.taille).(j.x / j.taille + 1) in
+
+	if ((bloc6 <> air_)) then (
+	
+			raise Mort;
+	
+	);;
+
+
+let checkBloc9 (j : carre) g = 
+
+	let bloc9 = g.(j.y / j.taille + 1).(j.x / j.taille + 1) in
+
+	if ((j.y mod j.taille > 0) && (bloc9 <> air_)) then (
+	
+		raise Mort;
+
+	);;
+
+
+let checkBloc8 (j : carre) g =
+
+	let bloc8 = g.(j.y / j.taille + 1).(j.x / j.taille) in
+
+	if ((j.y mod j.taille > 0) && (bloc8 <> air_)) then (
+	
+		raise Mort;
+
+	);;
+
+
 (* -------------- Ouverture du niveau ------------- *)
 
 let niv1 = open_in_bin "niveau1.txt";;
 
 let grille = file_to_byte_array niv1;;
 
+close_in niv1;;
+
 let affichage = agrandir grille joueur.taille;;
-(*
-let arr3 = decoupage arr2;;
-let arr4 = Array.map make_image arr3;;
-for i=0 to 1000/20 do
-	draw_image arr4.(i) (i*20) 0;
-done;;*)
 
 renverse grille;;
 
@@ -249,35 +258,21 @@ let rec loop () =
 	let conserve = ref conservationInput in
 		
 	let i = ref 0
-	and stop = longueurNiveau*joueur.taille/vitesse + 1 in
+	and stop = longueurNiveau*joueur.taille/vitesse in 
 	while (!i)<stop do
 		
 		try
+
+			checkBloc8 joueur grille;
 		
-			if (joueur.x mod joueur.taille > joueur.taille - vitesse) then (
+			if (joueur.x mod joueur.taille >= joueur.taille - vitesse) then (
 				
-				let bloc6 = grille.(joueur.y / joueur.taille).(joueur.x / joueur.taille + 1)
-				and bloc8 = grille.(joueur.y / joueur.taille + 1).(joueur.x / joueur.taille)
-				and bloc9 = grille.(joueur.y / joueur.taille + 1).(joueur.x / joueur.taille + 1) in
-				
-				if ((bloc6 = bloc_)
-						|| (joueur.y mod joueur.taille > 0 && bloc9 = bloc_)
-						|| (bloc6 = picHaut_)
-						|| (joueur.y mod joueur.taille > 0 && bloc9 = picHaut_)
-						|| (bloc6 = demiBloc_)
-						|| (joueur.y mod joueur.taille > 0 && bloc9 = demiBloc_)
-						|| (bloc6 = picBas_)
-						|| (joueur.y mod joueur.taille > 0 && bloc8 = picBas_)
-						|| (joueur.y mod joueur.taille > 0 && bloc9 = picBas_)
-						) then (
-					
-					raise Mort;
-					
-				);
+				checkBloc6 joueur grille;
+				checkBloc9 joueur grille;
 				
 			);
 			
-			if (joueur.y mod joueur.taille < gravite) then (
+			if (joueur.y mod joueur.taille < gravite) then ( (* On considère le joueur alors sur le bloc *)
 				
 				let bloc2 = grille.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille)
 				and bloc3 = grille.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille + 1) in
@@ -298,7 +293,7 @@ let rec loop () =
 							joueur.vy <- tempsSaut;
 							
 						);
-						while key_pressed() do
+						while key_pressed() do   (* Suppression des input "en trop" qui ferait sauter le bloc plusieurs fois *)
 							let _ = read_key() in ()
 						done;
 					)
@@ -320,22 +315,27 @@ let rec loop () =
 			);
 			
 			if (joueur.vy > 0) then (
-				joueur.y <- joueur.y + saut joueur.vy;
+
+				joueur.y <- joueur.y + joueur.vy;
 				joueur.vy <- joueur.vy - 1;
+
 				if (joueur.vy = 0) then (
+
 					angle := (5. *. pi /. 4.);
+
 				) else (
+
 					angle := !angle -. pi /. (2. *. (float_of_int tempsSaut));
+
 				);
 			);
 			
 			joueur.x <- joueur.x + vitesse;
 			
-			draw_image img (-vitesse*(!i)) 0;
+			draw_image img (-vitesse*(!i)) 0; 
 			
 			(*-------------------Partie rotation--------------------- *)
 			joueur.yc <- float_of_int joueur.y +. 12.5;
-			(*fill_rect posAffx joueur.y joueur.taille joueur.taille;*)
 			
 			point1.x <- joueur.xc +. rayon *. cos !angle;
 			point1.y <- joueur.yc +. rayon *. sin !angle;
@@ -349,7 +349,7 @@ let rec loop () =
 			let poly = [|foi point1; foi point2; foi point3; foi point4|] in
 				fill_poly poly;
 			
-			if (key_pressed()) then (
+			if (key_pressed()) then ( (* Un input ne peut être conservé que pendant un nombre d'images égal à conservationInput (ne fonctionne que pour un seul input à la fois) *)
 				
 				if ((!conserve) > 0) then (
 					
@@ -364,13 +364,13 @@ let rec loop () =
 				
 			);
 			
-			Unix.sleepf 0.016;
+			Unix.sleepf 0.016; (* 60 FPS *)
 			i := (!i) + 1;
 		
 		with
 		| Mort -> (
 				let choix = wait_next_event[Key_pressed] in
-				if (choix.key <> 'q') then (
+				if (choix.key <> '\r') then ( (* Appuyer sur ENTRÉE pour quitter après une mort *)
 					loop();
 				) else (
 					i := stop;
@@ -380,6 +380,6 @@ let rec loop () =
 	done;;
 
 
-loop();;
+(* Éxécution du code *)
 
-close_in niv1;;
+loop();;
