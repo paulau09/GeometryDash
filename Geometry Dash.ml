@@ -258,125 +258,129 @@ let rec loop () =
 	let conserve = ref conservationInput in
 		
 	let i = ref 0
+	and temps = ref (Sys.time())
 	and stop = longueurNiveau*joueur.taille/vitesse in 
 	while (!i)<stop do
-		
-		try
 
-			checkBloc8 joueur grille;
-		
-			if (joueur.x mod joueur.taille >= joueur.taille - vitesse) then (
-				
-				checkBloc6 joueur grille;
-				checkBloc9 joueur grille;
-				
-			);
+		if (Sys.time() -. (!temps) >= 0.016) then ( (* 60 FPS *)
+
+			try
+
+				checkBloc8 joueur grille;
 			
-			if (joueur.y mod joueur.taille < gravite) then ( (* On considère le joueur alors sur le bloc *)
-				
-				let bloc2 = grille.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille)
-				and bloc3 = grille.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille + 1) in
-				
-				if ((bloc2 = bloc_)
-						|| (bloc3 = bloc_)
-						|| (bloc2 = demiBloc_)
-						|| (bloc3 = demiBloc_)) then (
+				if (joueur.x mod joueur.taille >= joueur.taille - vitesse) then (
 					
-					joueur.y <- joueur.y - (joueur.y mod joueur.taille);
-					joueur.vy <- 0;
-					angle := (5. *. pi /. 4.);
+					checkBloc6 joueur grille;
+					checkBloc9 joueur grille;
 					
-					if (key_pressed()) then (
+				);
+				
+				if (joueur.y mod joueur.taille < gravite) then ( (* On considère le joueur alors sur le bloc *)
+					
+					let bloc2 = grille.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille)
+					and bloc3 = grille.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille + 1) in
+					
+					if ((bloc2 = bloc_)
+							|| (bloc3 = bloc_)
+							|| (bloc2 = demiBloc_)
+							|| (bloc3 = demiBloc_)) then (
 						
-						if (read_key() = ' ') then (
+						joueur.y <- joueur.y - (joueur.y mod joueur.taille);
+						joueur.vy <- 0;
+						angle := (5. *. pi /. 4.);
+						
+						if (key_pressed()) then (
 							
-							joueur.vy <- tempsSaut;
-							
-						);
-						while key_pressed() do   (* Suppression des input "en trop" qui ferait sauter le bloc plusieurs fois *)
-							let _ = read_key() in ()
-						done;
+							if (read_key() = ' ') then (
+								
+								joueur.vy <- tempsSaut;
+								
+							);
+							while key_pressed() do   (* Suppression des input "en trop" qui ferait sauter le bloc plusieurs fois *)
+								let _ = read_key() in ()
+							done;
+						)
+						
+					) else if (bloc2 = air_ && bloc3 = air_) then (
+						
+						joueur.y <- joueur.y - gravite;
+						
+					) else if (bloc2 = picHaut_ || bloc3 = picHaut_ ) then (
+						
+						raise Mort;
+						
 					)
 					
-				) else if (bloc2 = air_ && bloc3 = air_) then (
+				) else (
 					
 					joueur.y <- joueur.y - gravite;
 					
-				) else if (bloc2 = picHaut_ || bloc3 = picHaut_ ) then (
-					
-					raise Mort;
-					
-				)
-				
-			) else (
-				
-				joueur.y <- joueur.y - gravite;
-				
-			);
-			
-			if (joueur.vy > 0) then (
-
-				joueur.y <- joueur.y + joueur.vy;
-				joueur.vy <- joueur.vy - 1;
-
-				if (joueur.vy = 0) then (
-
-					angle := (5. *. pi /. 4.);
-
-				) else (
-
-					angle := !angle -. pi /. (2. *. (float_of_int tempsSaut));
-
 				);
-			);
-			
-			joueur.x <- joueur.x + vitesse;
-			
-			draw_image img (-vitesse*(!i)) 0; 
-			
-			(*-------------------Partie rotation--------------------- *)
-			joueur.yc <- float_of_int joueur.y +. 12.5;
-			
-			point1.x <- joueur.xc +. rayon *. cos !angle;
-			point1.y <- joueur.yc +. rayon *. sin !angle;
-			point2.x <- joueur.xc +. rayon *. cos (!angle +. pi /. 2.);
-			point2.y <- joueur.yc +. rayon *. sin (!angle +. pi /. 2.);
-			point3.x <- joueur.xc +. rayon *. cos (!angle +. pi);
-			point3.y <- joueur.yc +. rayon *. sin (!angle +. pi);
-			point4.x <- joueur.xc +. rayon *. cos (!angle -. pi /. 2.);
-			point4.y <- joueur.yc +. rayon *. sin (!angle -. pi /. 2.);
-			
-			let poly = [|foi point1; foi point2; foi point3; foi point4|] in
-				fill_poly poly;
-			
-			if (key_pressed()) then ( (* Un input ne peut être conservé que pendant un nombre d'images égal à conservationInput (ne fonctionne que pour un seul input à la fois) *)
 				
-				if ((!conserve) > 0) then (
-					
-					conserve := !conserve - 1;
-					
-				) else (
-					
-					conserve := conservationInput;
-					let _ = read_key() in ();
-					
-				)
-				
-			);
-			
-			Unix.sleepf 0.016; (* 60 FPS *)
-			i := (!i) + 1;
-		
-		with
-		| Mort -> (
-				let choix = wait_next_event[Key_pressed] in
-				if (choix.key <> '\r') then ( (* Appuyer sur ENTRÉE pour quitter après une mort *)
-					loop();
-				) else (
-					i := stop;
+				if (joueur.vy > 0) then (
+
+					joueur.y <- joueur.y + joueur.vy;
+					joueur.vy <- joueur.vy - 1;
+
+					if (joueur.vy = 0) then (
+
+						angle := (5. *. pi /. 4.);
+
+					) else (
+
+						angle := !angle -. pi /. (2. *. (float_of_int tempsSaut));
+
+					);
 				);
+				
+				joueur.x <- joueur.x + vitesse;
+				
+				draw_image img (-vitesse*(!i)) 0; 
+				
+				(*-------------------Partie rotation--------------------- *)
+				joueur.yc <- float_of_int joueur.y +. 12.5;
+				
+				point1.x <- joueur.xc +. rayon *. cos !angle;
+				point1.y <- joueur.yc +. rayon *. sin !angle;
+				point2.x <- joueur.xc +. rayon *. cos (!angle +. pi /. 2.);
+				point2.y <- joueur.yc +. rayon *. sin (!angle +. pi /. 2.);
+				point3.x <- joueur.xc +. rayon *. cos (!angle +. pi);
+				point3.y <- joueur.yc +. rayon *. sin (!angle +. pi);
+				point4.x <- joueur.xc +. rayon *. cos (!angle -. pi /. 2.);
+				point4.y <- joueur.yc +. rayon *. sin (!angle -. pi /. 2.);
+				
+				let poly = [|foi point1; foi point2; foi point3; foi point4|] in
+					fill_poly poly;
+				
+				if (key_pressed()) then ( (* Un input ne peut être conservé que pendant un nombre d'images égal à conservationInput (ne fonctionne que pour un seul input à la fois) *)
+					
+					if ((!conserve) > 0) then (
+						
+						conserve := !conserve - 1;
+						
+					) else (
+						
+						conserve := conservationInput;
+						let _ = read_key() in ();
+						
+					)
+					
+				);
+				temps := Sys.time();
+				i := (!i) + 1;
+			
+			with
+			| Mort -> (
+					let choix = wait_next_event[Key_pressed] in
+					if (choix.key <> '\r') then ( (* Appuyer sur ENTRÉE pour quitter après une mort *)
+						loop();
+					) else (
+						i := stop;
+					);
+			);
+
 		);
-		
+
 	done;;
 
 
