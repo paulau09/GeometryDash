@@ -268,9 +268,9 @@ let rec loop () =
 
 				checkBloc8 joueur grille;
 			
-				if (joueur.x mod joueur.taille >= joueur.taille - vitesse) then (
+				if (joueur.x mod joueur.taille >= joueur.taille - vitesse) then ( (* Si le joueur passe au bloc suivant *)
 					
-					checkBloc6 joueur grille;
+					checkBloc6 joueur grille; (* Test de mort ou de si on continue dans l'air *)
 					checkBloc9 joueur grille;
 					
 				);
