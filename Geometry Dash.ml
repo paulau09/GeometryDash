@@ -180,7 +180,7 @@ let foi pt = 	(* convertit point -> int*int *)
 	a,b;;
 
 
-(* les fonctions checkBloc regarde les blocs correspondant et raise une exception Mort le cas échéant *)
+(* les fonctions checkBloc regardent les blocs correspondants et lèvent une exception Mort le cas échéant *)
 (* Les numérotations des blocs sont faites tout le long du programme selon un pavé numérique organisé de telle sorte
         789
         456
@@ -253,7 +253,7 @@ close_in background;;
 
 let affichage = agrandir grille joueur.taille;;
 
-renverse grille;;   (* On renverse la grille pour qu'elle soit orienté de la même façon qu'un repère mathématique classique *)
+renverse grille;;   (* On renverse la grille pour qu'elle soit orientée de la même façon qu'un repère mathématique classique *)
 
 let img = make_image affichage;;
 
@@ -298,14 +298,14 @@ and loop () =
 
 			try
 
-                (* Test pour voir si le joueur meurt ou de s'il continue dans l'air *)
+                (* Test pour voir si le joueur meurt ou s'il continue dans l'air *)
 				checkBloc8 joueur grille;
 				if (joueur.x mod joueur.taille >= joueur.taille - vitesse) then ( (* Si le joueur passe au bloc suivant *)
 					checkBloc6 joueur grille;
 					checkBloc9 joueur grille;
 				);
 				
-				if (joueur.y mod joueur.taille < gravite) then ( (* On considère le joueur alors sur le bloc d'en dessous *)
+				if (joueur.y mod joueur.taille < gravite) then ( (* On considère alors le joueur sur le bloc d'en dessous *)
 					
 					let bloc2 = grille.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille)
 					and bloc3 = grille.(joueur.y / joueur.taille - 1).(joueur.x / joueur.taille + 1) in
@@ -326,7 +326,7 @@ and loop () =
 								joueur.vy <- tempsSaut;
 								
 							);
-							while key_pressed() do   (* Suppression des input "en trop" qui ferait sauter le bloc plusieurs fois *)
+							while key_pressed() do   (* Suppression des input "en trop" qui feraient sauter le joueur plusieurs fois *)
 								let _ = read_key() in ()
 							done;
 						)
@@ -341,7 +341,7 @@ and loop () =
 						
 					)
 					
-				) else ( (* Le joueur n'a alors pas d'appuie et donc continue de chuter au sein du même bloc *)
+				) else ( (* Le joueur n'a alors pas d'appui et continue donc de chuter au sein du même bloc *)
 					
 					joueur.y <- joueur.y - gravite;
 					
