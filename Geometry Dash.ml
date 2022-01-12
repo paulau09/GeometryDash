@@ -79,83 +79,57 @@ let agrandir arr agrandissement =
 			if (valeur = air_) then (
 				
 				for k=0 to (agrandissement-1) do
-					
 					for l=0 to (agrandissement-1) do
-						
 						nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- couleurFond
-						
 					done
 				done;
 			
 			) else if (valeur = bloc_) then (
 				
 				for k=0 to (agrandissement-1) do
-					
 					for l=0 to (agrandissement-1) do
-						
 						nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- couleurBloc
-						
 					done
 				done;
 				
 			) else if (valeur = picHaut_) then (
 				
 				let centrey = agrandissement/2 + 1 in
-				
 				for k=0 to (agrandissement-1) do
-					
 					for l=0 to (agrandissement-1) do
-						
 						if (abs(centrey-l) > k) then (
-							
 							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- couleurFond;
-							
 						) else (
-							
 							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- couleurBloc;
-							
 						)
-						
 					done
 				done;
+
 			) else if (valeur = picBas_) then (
 				
 				let centrey = agrandissement/2 + 1 in
-				
 				for k=0 to (agrandissement-1) do
-					
 					for l=0 to (agrandissement-1) do
-						
 						if (abs(centrey-l) >= (agrandissement - k)) then (
-							
 							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- couleurFond;
-							
 						) else (
-							
 							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- couleurBloc;
-							
 						)
-						
 					done
-				done;	
+				done;
+
 			) else if (valeur = demiBloc_) then (
 				
 				for k=0 to (agrandissement-1) do
-					
 					for l=0 to (agrandissement-1) do
-						
 						if (k < agrandissement/2) then (
-							
 							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- couleurBloc;
-							
 						) else (
-							
 							nouvArr.(i*agrandissement+k).(j*agrandissement+l) <- couleurFond;
-							
 						)
-						
 					done
 				done;
+
 			);
 			
 		done
@@ -189,33 +163,24 @@ let foi pt = 	(* convertit point -> int*int *)
 let checkBloc6 (j : carre) g =
 
 	let bloc6 = g.(j.y / j.taille).(j.x / j.taille + 1) in
-
 	if ((bloc6 <> air_)) then (
-	
 		raise Mort;
-	
 	);;
 
 
 let checkBloc9 (j : carre) g = 
 
 	let bloc9 = g.(j.y / j.taille + 1).(j.x / j.taille + 1) in
-
 	if ((j.y mod j.taille > 0) && (bloc9 <> air_)) then (
-	
 		raise Mort;
-
 	);;
 
 
 let checkBloc8 (j : carre) g =
 
 	let bloc8 = g.(j.y / j.taille + 1).(j.x / j.taille) in
-
 	if ((j.y mod j.taille > 0) && (bloc8 <> air_)) then (
-	
 		raise Mort;
-
 	);;
 
 
@@ -228,6 +193,7 @@ let affiche_texte texte dx dy =
 
 (* Permet de lire les images stockées sous forme de texte comme l'arrière-plan *)
 let text_image_to_image file =
+
     let hauteur = int_of_string (input_line file)
     and longueur = int_of_string (input_line file) in
     
@@ -236,6 +202,7 @@ let text_image_to_image file =
     for i=0 to longueur*hauteur-1 do
         arr.(i/longueur).(i mod longueur) <- int_of_string (input_line file);
     done;
+
     make_image arr;;
 
 
@@ -322,13 +289,12 @@ and loop () =
 						if (key_pressed()) then (
 							
 							if (read_key() = ' ') then ( (* Le joueur appuie sur ESPACE pour sauter *)
-								
 								joueur.vy <- tempsSaut;
-								
 							);
 							while key_pressed() do   (* Suppression des input "en trop" qui feraient sauter le joueur plusieurs fois *)
 								let _ = read_key() in ()
 							done;
+
 						)
 						
 					) else if (bloc2 = air_ && bloc3 = air_) then (     (* Le joueur peut alors tomber dans le bloc d'en dessous *)
@@ -353,13 +319,9 @@ and loop () =
 					joueur.vy <- joueur.vy - 1;
 
 					if (joueur.vy = 0) then (
-
 						angle := (5. *. pi /. 4.);
-
 					) else (
-
 						angle := !angle -. pi /. (2. *. (float_of_int tempsSaut));
-
 					);
 				);
 				
