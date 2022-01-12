@@ -7,25 +7,16 @@ image = image.convert("RGB")
 print(image.mode)
 print(image.size)
 
-# resizing the image
-new_width = image.size[0] # output width
-w_percent = (new_width/float(image.size[0]))
-new_height = int((float(image.size[1])*float(w_percent)))
-new_img = image.resize((new_width,new_height), Image.ANTIALIAS)
+# conversion en array numpy pour pouvoir traiter les données
+data = asarray(image)
 
-print(new_img.mode)
-print(new_img.size)
-
-# convert image to numpy array
-data = asarray(new_img)
-
-# converting to txt file
-with open(f"background.txt", "w") as fichier: # name of output file (can be ID dependant)
-    height, width = new_img.size
+# conversion vers un fichier texte
+with open(f"background.txt", "w") as fichier:
+    height, width = image.size
     fichier.write(f"{width}\n{height}\n")
     for k in range(width):
         for j in range(height):
-            somme = 0
+            somme = 0   # Pour chaque donnée, on écrit dans le fichier l'entier correspondant
             for info in data[k][j]:
                 somme *= 256
                 somme += info
