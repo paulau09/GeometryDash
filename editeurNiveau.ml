@@ -1,12 +1,8 @@
 #use "topfind";;
+
 #require "graphics";;
 
 open Graphics;;
-(*
-deplacement de la grille
-mettre l'image derriere -> compromis
-ouvrir un niveau
-*)
 
 open_graph " 1000x500+150+150";;
 
@@ -16,31 +12,27 @@ and tailleBloc = 25
 and pos = ref 0
 and blocCourant = ref 'B'
 and touches = [|'B';'b';'h';'D';'e'|];; (*e pour effacer*)
+
 let fond = 0xEEEEEE
-and noir = 0x333333;;
+and noir = 0x333333
+and decalage = 1
+and niveau = "niv_perso.txt";;
 
 (*Création des fleches de déplacement *)
 let tr1 = [|10,250; 50,220; 50,280|];;
 let tr2 = [|990,250; 950,220; 950,280|];;
 let c1 = 37, 250
 and c2 = 963, 250;;
-let u1 = -50, 0
-and v1 = -40, -30
-and u2 = -50,0
-and v2 = 40,-30;;
+
+fill_poly tr1;;
+fill_poly tr2;;
+(*Création différents blocs*)
 let bloc_ = int_of_char 'B'
 and air_ = int_of_char ' '
 and picHaut_ = int_of_char 'h'
 and picBas_ = int_of_char 'b'
 and demiBloc_ = int_of_char 'D';;
 
-fill_poly tr1;;
-fill_poly tr2;;
-
-type point = { x:int; y:int};;
-let pdt_scal v1 v2 = 
-	let a,b = v1 
-	and c,d = v2 in a*c+b*d;;
 
 let dist pt1 pt2 = 
 	let a,b = pt1
@@ -48,7 +40,25 @@ let dist pt1 pt2 =
 	sqrt ((float_of_int (c-a))**2. +. (float_of_int (d-b)));;
 
 
-let agrandir arr agrandissement =
+let file_to_char_array fichier =	(*Lit un fichier pour en extraire la grille correspondante*)
+	
+	let grille = Array.make_matrix hauteurNiveau longueurMax ' ' in
+	
+	for i=0 to (hauteurNiveau-1) do
+		
+		for j=0 to (longueurMax) do
+			
+			let c = char_of_int (input_byte fichier) in
+			if ((c <> '\n') && (c <> '\r')) then
+				grille.(i).(j) <- c
+			
+		done
+		
+	done;
+	grille;;
+
+
+let agrandir arr agrandissement =	(*Permet d'obtenir une grille à ensuite convertir en image*)
 	
 	let taille1 = Array.length arr in
 	let taille2 = Array.length arr.(0) in
@@ -120,7 +130,7 @@ let agrandir arr agrandissement =
 	done;
 	nouvArr;;
 
-let decoupe grille longueur =
+let decoupe grille longueur =	(*extrait de la grille de jeu la partie correspondant à ce qu'on veut afficher à l'écran*)
 	let grille_d = Array.make_matrix hauteurNiveau longueur ' ' in
 	for i=0 to hauteurNiveau - 1 do 
 		for j=0 to longueur - 1 do 
@@ -130,7 +140,7 @@ let decoupe grille longueur =
 	grille_d;;
 
 
-let renverse arr = 
+let renverse arr = 	(*Permet de renverser la grille de haut en bas*)
 	let long = Array.length arr and
 	tmp = ref arr.(0) in
 	for i = 0 to (long/2 -1) do 
@@ -140,38 +150,29 @@ let renverse arr =
 	done;;
 
 
-let deplacement grille = 
+let deplacement grille = 	(*Permet d'afficher la grille déplacée vers la droite ou la gauche*)
 	let grille_d = decoupe grille 36 in
 	renverse grille_d;
 	let grille_a = agrandir grille_d tailleBloc in
-	
 	let img = make_image grille_a in
 	draw_image img 50 0;;
 
 
-let move_left grille  = 
+let move_left grille  = 	(*Gère l'action de la flèche de droite*)
 	if !pos != 0 then (
-		pos := !pos - 2;
+		pos := !pos - decalage;
 		deplacement grille
 	);;
 
 
-let move_right grille = 
+let move_right grille = 	(*Gère l'action de la flèche de gauche*)
 	if !pos != longueurMax-37 then (
-		pos := !pos + 2;
+		pos := !pos + decalage;
 		deplacement grille
 	);;
 
 
-let affiche_niv grille = 
-	fill_poly tr1;
-	fill_poly tr2;
-	let img = make_image grille in
-	draw_image img 0 (-(!pos));;
-
-
-
-let rec affiche_bloc bloc x y = match bloc with
+let rec affiche_bloc bloc x y = match bloc with		(*Remplit le bloc actuel correspondant dans la case cliqué*)
 |	'B'-> (affiche_bloc 'e' x y; set_color noir; fill_rect (x - x mod tailleBloc) (y-y mod tailleBloc) tailleBloc tailleBloc)
 |	'b'-> (affiche_bloc 'e' x y; set_color noir; fill_poly [|x-x mod tailleBloc,y-y mod tailleBloc + 25;x-x mod tailleBloc +24 ,y-y mod tailleBloc + 25;x-x mod tailleBloc +13 ,y-y mod tailleBloc+1|])
 |	'h'-> (affiche_bloc 'e' x y; set_color noir; fill_poly [|x-x mod tailleBloc,y-y mod tailleBloc;x-x mod tailleBloc +24 ,y-y mod tailleBloc ;x-x mod tailleBloc +13 ,y-y mod tailleBloc + 24|])
@@ -179,41 +180,55 @@ let rec affiche_bloc bloc x y = match bloc with
 |	'e'-> (set_color fond; fill_rect (x - x mod tailleBloc) (y-y mod tailleBloc) tailleBloc tailleBloc)
 |	_ -> ();;
 
-let enregistre grille = 
-	let fichier = open_out_bin "niv_perso.txt" in 
+
+let enregistre grille = 	(*Enregistre la grille dans le fichier "niv_perso.txt" afin de jouer le niveau ou l'éditer plus tard*)
+	let fichier = open_out_bin niveau in 
 	for i=0 to Array.length grille - 2 do 
 		for j=0 to Array.length grille.(i) - 1 do 
 			Printf.fprintf fichier "%c" grille.(i).(j)
-        done;
+		done;
 		Printf.fprintf fichier "\r"
-    done;
+	done;
 	for j=0 to Array.length grille.(hauteurNiveau-1) - 1 do (*Rajout de blocs sur la derniere ligne si la case était initialement vide afin de garder un niveau jouable*)
 		if (grille.(hauteurNiveau-1).(j) <> ' ') then (Printf.fprintf fichier "%c" grille.(hauteurNiveau-1).(j)) else(Printf.fprintf fichier "B") 
 	done;
 	Printf.fprintf fichier "\r";
-    close_out fichier;;
+	close_out fichier;;
 
-let grille = Array.make_matrix hauteurNiveau longueurMax ' ';;
 
-let continue = ref true;;
-while (!continue) do
+let chargeNiveau fichier = 		(*Ouvre le niveau dans le fichier et en extrait la grille de jeu*)
+	let f = open_in_bin fichier in 
+	let grille = file_to_char_array f in 
+	grille;;
 
-	if key_pressed() = true then (
+let grille = chargeNiveau niveau in
+let grille_aff = agrandir (decoupe grille 36) tailleBloc in 
+let img = make_image grille_aff in 
+draw_image img 50 0;
+renverse grille;
+let continue = ref true in
+while (!continue) do		(*Boucle principale*)
+	
+	if key_pressed() = true then (		(*Gere le changement de bloc selectionné*)
 		let key = read_key() in
-		if Array.memq key touches then blocCourant := key
-		else if (key = '\r' || key = '\n') then (enregistre grille; continue := false)
+		if Array.memq key touches then (
+			blocCourant := key
+		) else if (key = '\t') then (		(*Declenche l'enregistrement de la grille puis la fermeture de l'editeur de niveau*)
+			renverse grille;
+			enregistre grille;
+			continue := false;
+		);
 	);
 
-	if button_down() = true then (
+	if button_down() = true then (		
 		let a,b = mouse_pos() in 
-		(*if (a<=50) then	*)						(*Gerer triangles*)
-		if ((dist (a,b) c1) < 37.) then (move_left grille);
+		if ((dist (a,b) c1) < 37.) then (move_left grille);		(*Detecte le click des fleches de deplacement et deplace la grille*)
 		if ((dist (a,b) c2) < 37.) then (move_right grille);
-		if (a>=50 && a<=950) then (			(*Gerer blocs*)
-			if (!blocCourant <> 'e') then (grille.(b/25).(a/25 + !pos) <- !blocCourant) else (grille.(b/25).(a/25 + !pos) <- ' ');
+		if (a >= 50 && a < (size_x()-50) && b >= 0 && b < (size_y())) then (		(*Affiche le bloc correspondant à l'endroit cliqué et le stocke dans la grille*)
+			if (!blocCourant <> 'e') then (grille.(b/25).(a/25 + (!pos) - 2) <- !blocCourant) else (grille.(b/25).(a/25 + (!pos) - 2) <- ' ');
 			affiche_bloc !blocCourant a b;
-		)
+		);
 	)
-done;;
 
-clear_graph();;
+done;;
+close_graph();;
