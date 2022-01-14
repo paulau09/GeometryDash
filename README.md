@@ -8,7 +8,7 @@ A l'exécution du fichier ocaml, une page d'accueil s'ouvre afin de choisir
 entre jouer au niveau de base ou niveau personnalisé ou encore éditer le niveau 
 personnalisé.
 
-Dans chaque niveau et l'éditeur de niveau, appuyer sur entrée pour revenir a l'accueil 
+Dans chaque niveau et l'éditeur de niveau, appuyer sur entrée pour revenir a l'accueil.
 Appuyer sur espace pour revenir au début du niveau 
 
 Signification des blocs :
@@ -23,7 +23,7 @@ Signification des blocs :
 
 	'D' -> demi bloc
 
-Pour éditer le niveau : appuyer sur la touche correspondante qui reste en mémoire 
+Pour éditer le niveau : appuyer sur la touche correspondante (e pour le vide) qui reste en mémoire 
 jusque l'appui d'une autre touche
 
 
