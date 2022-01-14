@@ -22,7 +22,7 @@ Signification des blocs :
 
 	'D' -> demi bloc
 
-Dans le jeu, espace permet de sauter, seul control sur le joueur, afin de sauter plusieurs fois, il est préférable d'appuyer autant de fois sur la touche espace.
+Dans le jeu, espace permet de sauter, seul control sur le joueur. Afin de sauter plusieurs fois, il est préférable d'appuyer autant de fois sur la touche espace.
 
 Pour éditer le niveau : appuyer sur la touche correspondante (e pour le vide) qui reste en mémoire 
 jusque l'appui d'une autre touche
