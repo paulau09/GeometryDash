@@ -6,7 +6,7 @@ texte contenant le niveau de base et un niveau personnalisable.
 
 A l'exécution du fichier ocaml, une page d'accueil s'ouvre afin de choisir
 entre jouer au niveau de base ou niveau personnalisé ou encore éditer le niveau 
-personnalisé.
+personnalisable.
 
 Dans chaque niveau et l'éditeur de niveau, appuyer sur entrée pour revenir a l'accueil.
 Appuyer sur espace pour revenir au début du niveau 
